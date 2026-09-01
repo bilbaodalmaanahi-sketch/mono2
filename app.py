@@ -137,6 +137,7 @@ valor_buscado = st.number_input(
     "Valor a buscar",
     min_value=0,
     value=None,
+    placeholder="Ingrese el kilometraje",
     step=1
 )
 
@@ -144,6 +145,7 @@ nuevov = st.number_input(
     "Nuevo valor",
     min_value=0,
     value=None,
+    placeholder="Ingrese el nuevo valor",
     step=1
 )
 
