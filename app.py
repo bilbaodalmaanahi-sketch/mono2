@@ -1,7 +1,113 @@
     
+import streamlit as st
 from pathlib import Path
+import struct
 import pandas as pd
 import random
+
+
+# ============================================================
+# CONFIGURACIÓN
+# ============================================================
+
+st.set_page_config(
+    page_title="Monky2 BIN Analyzer",
+    page_icon="",
+    layout="wide"
+)
+
+# ============================================================
+# ESTILO UNDERGROUND
+# ============================================================
+
+st.markdown("""
+<style>
+
+.stApp {
+    background-color: #080808;
+    color: #00ff66;
+}
+
+html, body, [class*="css"] {
+    font-family: "Courier New", monospace;
+}
+
+h1 {
+    color: #00ff66 !important;
+    font-family: "Courier New", monospace !important;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+h2, h3 {
+    color: #00ff66 !important;
+    font-family: "Courier New", monospace !important;
+}
+
+p {
+    color: #b0ffcc;
+}
+
+input {
+    background-color: #111111 !important;
+    color: #00ff66 !important;
+    border: 1px solid #00ff66 !important;
+    font-family: "Courier New", monospace !important;
+}
+
+.stButton > button {
+    background-color: #001a0a;
+    color: #00ff66;
+    border: 1px solid #00ff66;
+    border-radius: 0px;
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.stButton > button:hover {
+    background-color: #00ff66;
+    color: #000000;
+}
+
+[data-testid="stMetric"] {
+    background-color: #0d0d0d;
+    border: 1px solid #00ff66;
+    padding: 15px;
+}
+
+[data-testid="stMetricLabel"] {
+    color: #00ff66 !important;
+}
+
+[data-testid="stMetricValue"] {
+    color: #ffffff !important;
+}
+
+[data-testid="stDataFrame"] {
+    border: 1px solid #00ff66;
+}
+
+</style>
+""", unsafe_allow_html=True)
+# ============================================================
+# TÍTULO
+# ============================================================
+
+st.title("🐒 MONKY EEPROM LAB")
+
+st.markdown(
+    "### ECU / EEPROM Binary Memory Analyzer"
+)
+
+st.caption("Concept by Ariel Calacaterra")
+
+st.write(
+    "Busca un valor exacto, realiza un barrido de las "
+    "tres últimas cifras y busca equivalentes en metros "
+    "dentro de todo el archivo BIN."
+)
 
 
 # ============================================================
@@ -14,11 +120,14 @@ archivo1 = st.file_uploader(
 )
 
 if archivo1 is None:
-    st.info("Cargá un archivo BIN para comenzar.")
+    st.info("Seleccione un archivo BIN para comenzar.")
     st.stop()
 
+
+# Leer BIN cargado por el usuario
 datos = archivo1.read()
 
+print("Tamaño:", len(datos), "bytes")
 
 
 # ============================================================
