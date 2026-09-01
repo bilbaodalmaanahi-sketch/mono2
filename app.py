@@ -704,27 +704,6 @@ else:
 
             })
 
-
-        # ====================================================
-        # RESULTADO DE MODIFICACIÓN
-        # ====================================================
-
-        st.success(
-            f"BIN modificado correctamente. "
-            f"Se realizaron {len(cambios)} cambio(s)."
-        )
-
-
-        df_cambios = pd.DataFrame(cambios)
-
-
-        st.dataframe(
-            df_cambios,
-            use_container_width=True,
-            hide_index=True
-        )
-
-
         
 # ============================================================
 # GENERAR NUEVOS VALORES DE METROS
