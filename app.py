@@ -1,4 +1,3 @@
-    
 import streamlit as st
 from pathlib import Path
 import struct
@@ -134,9 +133,19 @@ print("Tamaño:", len(datos), "bytes")
 # VALORES
 # ============================================================
 
-valor_buscado = 185971
+valor_buscado = st.number_input(
+    "Valor a buscar",
+    min_value=0,
+    value=282235,
+    step=1
+)
 
-nuevov = 123
+nuevov = st.number_input(
+    "Nuevo valor",
+    min_value=0,
+    value=123,
+    step=1
+)
 
 
 # ============================================================
