@@ -136,14 +136,14 @@ print("Tamaño:", len(datos), "bytes")
 valor_buscado = st.number_input(
     "Valor a buscar",
     min_value=0,
-    value=,
+    value=None,
     step=1
 )
 
 nuevov = st.number_input(
     "Nuevo valor",
     min_value=0,
-    value=,
+    value=None,
     step=1
 )
 
