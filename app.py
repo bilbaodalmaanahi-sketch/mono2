@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import random
 
 
 # ============================================================
@@ -104,8 +105,8 @@ st.caption("Concept by Ariel Calacaterra")
 
 st.write(
     "Busca valores de kilometraje en formato BIG-ENDIAN y "
-    "LITTLE-ENDIAN, analiza equivalentes en metros y permite "
-    "generar un BIN modificado."
+    "LITTLE-ENDIAN, analiza equivalentes en metros y "
+    "genera un BIN modificado."
 )
 
 
@@ -163,7 +164,7 @@ with col3:
 
 
 # ============================================================
-# VALIDACIÓN
+# VALIDACIONES
 # ============================================================
 
 if archivo is None:
@@ -175,13 +176,33 @@ if archivo is None:
     st.stop()
 
 
-if valor_buscado is None or nuevov is None:
+if valor_buscado is None:
 
     st.warning(
-        "Ingrese el kilometraje a buscar y el nuevo valor."
+        "Ingrese el kilometraje que desea buscar."
     )
 
     st.stop()
+
+
+if nuevov is None:
+
+    st.warning(
+        "Ingrese el nuevo kilometraje."
+    )
+
+    st.stop()
+
+
+# ============================================================
+# CONVERTIR A ENTEROS
+# ============================================================
+
+valor_buscado = int(valor_buscado)
+
+nuevov = int(nuevov)
+
+margen_metros = int(margen_metros)
 
 
 # ============================================================
@@ -204,13 +225,6 @@ st.write(
 # ============================================================
 # EQUIVALENTE ORIGINAL EN METROS
 # ============================================================
-
-valor_buscado = int(valor_buscado)
-
-nuevov = int(nuevov)
-
-margen_metros = int(margen_metros)
-
 
 valor_metros_objetivo = (
     valor_buscado * 1000
@@ -250,7 +264,7 @@ with col1:
 with col2:
 
     st.metric(
-        "METROS",
+        "METROS OBJETIVO",
         f"{valor_metros_objetivo:,}"
     )
 
@@ -284,12 +298,16 @@ st.write(
 
 st.markdown("---")
 
-
 analizar = st.button(
     "ANALIZAR BIN",
-    use_container_width=True
+    use_container_width=True,
+    key="btn_analizar_bin"
 )
 
+
+# ============================================================
+# ANÁLISIS
+# ============================================================
 
 if analizar:
 
@@ -311,9 +329,9 @@ if analizar:
         ]
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # BIG-ENDIAN
-        # ====================================================
+        # ----------------------------------------------------
 
         decimal_big = int.from_bytes(
             bloque,
@@ -322,12 +340,14 @@ if analizar:
         )
 
 
-        hex_big = f"{decimal_big:08X}"
+        hex_big = (
+            f"{decimal_big:08X}"
+        )
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # LITTLE-ENDIAN
-        # ====================================================
+        # ----------------------------------------------------
 
         decimal_little = int.from_bytes(
             bloque,
@@ -336,12 +356,14 @@ if analizar:
         )
 
 
-        hex_little = f"{decimal_little:08X}"
+        hex_little = (
+            f"{decimal_little:08X}"
+        )
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # REGISTRO
-        # ====================================================
+        # ----------------------------------------------------
 
         registros.append({
 
@@ -378,7 +400,7 @@ if analizar:
 
 
     # ========================================================
-    # RESULTADO EXACTO
+    # BUSCAR VALOR EXACTO
     # ========================================================
 
     resultado = df[
@@ -389,21 +411,21 @@ if analizar:
 
 
     # ========================================================
-    # MOSTRAR RESULTADO EXACTO
+    # RESULTADOS EXACTOS
     # ========================================================
 
     st.markdown("---")
 
     st.subheader(
-        f"COINCIDENCIAS EXACTAS DE {valor_buscado:,} KM"
+        f"COINCIDENCIAS DE {valor_buscado:,} KM"
     )
 
 
     if not resultado.empty:
 
         st.success(
-            f"Se encontraron "
-            f"{len(resultado)} coincidencia(s)."
+            f"Coincidencias encontradas: "
+            f"{len(resultado)}"
         )
 
 
@@ -428,8 +450,7 @@ if analizar:
 
         st.warning(
             f"No se encontró "
-            f"{valor_buscado:,} en BIG-ENDIAN "
-            f"ni LITTLE-ENDIAN."
+            f"{valor_buscado:,} KM."
         )
 
 
@@ -451,9 +472,9 @@ if analizar:
         ]
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # BIG
-        # ====================================================
+        # ----------------------------------------------------
 
         valor_big = int.from_bytes(
             bloque,
@@ -462,9 +483,9 @@ if analizar:
         )
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # LITTLE
-        # ====================================================
+        # ----------------------------------------------------
 
         valor_little = int.from_bytes(
             bloque,
@@ -515,8 +536,6 @@ if analizar:
             <= limite_metros_fin
         ):
 
-            # Evitar duplicados
-
             if valor_little != valor_big:
 
                 filas_metros.append({
@@ -551,350 +570,14 @@ if analizar:
 
 
     # ========================================================
-    # MOSTRAR RESULTADOS METROS
+    # MOSTRAR METROS
     # ========================================================
 
     st.markdown("---")
 
     st.subheader(
-        "VALORES ENCONTRADOS EN RANGO DE METROS"
+        "VALORES ENCONTRADOS EN METROS"
     )
-
-
-    # ========================================================
-    # RESUMEN
-    # ========================================================
-
-    col1, col2, col3, col4 = st.columns(4)
-
-
-    with col1:
-
-        st.metric(
-            "KM BUSCADO",
-            f"{valor_buscado:,}"
-        )
-
-
-    with col2:
-
-        st.metric(
-            "METROS OBJETIVO",
-            f"{valor_metros_objetivo:,}"
-        )
-
-
-    with col3:
-
-        st.metric(
-            "MARGEN",
-            f"±{margen_metros:,}"
-        )
-
-
-    with col4:
-
-        st.metric(
-            "COINCIDENCIAS",
-            f"{len(df_metros)}"
-        )
-
-
-    # ========================================================
-    # RANGO
-    # ========================================================
-
-    st.write(
-        f"**Rango:** "
-        f"{limite_metros_inicio:,} "
-        f"→ "
-        f"{limite_metros_fin:,}"
-    )
-
-
-    # ========================================================
-    # MOSTRAR DATAFRAME
-    # ========================================================
-
-    if not df_metros.empty:
-
-        st.success(
-            f"Se encontraron "
-            f"{len(df_metros)} valores dentro del rango."
-        )
-
-
-        st.dataframe(
-            df_metros,
-            use_container_width=True,
-            hide_index=True
-        )
-
-
-    else:
-
-        st.warning(
-            "No se encontraron valores "
-            "en el rango especificado."
-        )
-
-
-    # ========================================================
-    # DATAFRAME COMPLETO
-    # ========================================================
-
-    with st.expander(
-        "MOSTRAR ANÁLISIS COMPLETO BIG-ENDIAN / LITTLE-ENDIAN"
-    ):
-
-        st.write(
-            f"Total de bloques analizados: "
-            f"{len(df):,}"
-        )
-
-
-        st.dataframe(
-            df,
-            use_container_width=True,
-            hide_index=True
-        )
-
-# ============================================================
-# CAMBIAR LOS VALORES DE KM Y GENERAR BIN MODIFICADO
-# ============================================================
-
-st.markdown("---")
-
-st.subheader("GENERAR BIN MODIFICADO")
-
-
-# ============================================================
-# BOTÓN PARA MODIFICAR
-# ============================================================
-
-generar_bin = st.button(
-    "GENERAR BIN MODIFICADO",
-    use_container_width=True,
-    key="generar_bin_modificado"
-)
-
-
-if generar_bin:
-
-    # ========================================================
-    # COPIA DEL BIN ORIGINAL
-    # ========================================================
-
-    datos_modificados = bytearray(datos)
-
-
-    # ========================================================
-    # CONTADOR DE CAMBIOS
-    # ========================================================
-
-    cambios_km = 0
-    cambios_metros = 0
-
-
-    # ========================================================
-    # CAMBIAR LOS VALORES EXACTOS DE KM
-    # ========================================================
-
-    for _, fila in resultado.iterrows():
-
-        direccion = int(
-            fila["Direccion_decimal"]
-        )
-
-
-        # ----------------------------------------------------
-        # DETERMINAR SI EL VALOR ERA BIG O LITTLE
-        # ----------------------------------------------------
-
-        fila_original = df[
-            df["Direccion_decimal"] == direccion
-        ].iloc[0]
-
-
-        # ====================================================
-        # BIG-ENDIAN
-        # ====================================================
-
-        if (
-            fila_original["Decimal_BIG"]
-            == valor_buscado
-        ):
-
-            datos_modificados[
-                direccion:direccion + 4
-            ] = int(nuevov).to_bytes(
-                4,
-                byteorder="big",
-                signed=False
-            )
-
-
-            cambios_km += 1
-
-
-            st.write(
-                f"KM BIG | "
-                f"0x{direccion:04X} | "
-                f"{valor_buscado:,} → "
-                f"{nuevov:,}"
-            )
-
-
-        # ====================================================
-        # LITTLE-ENDIAN
-        # ====================================================
-
-        elif (
-            fila_original["Decimal_LITTLE"]
-            == valor_buscado
-        ):
-
-            datos_modificados[
-                direccion:direccion + 4
-            ] = int(nuevov).to_bytes(
-                4,
-                byteorder="little",
-                signed=False
-            )
-
-
-            cambios_km += 1
-
-
-            st.write(
-                f"KM LITTLE | "
-                f"0x{direccion:04X} | "
-                f"{valor_buscado:,} → "
-                f"{nuevov:,}"
-            )
-
-
-    # ========================================================
-    # GENERAR NUEVOS VALORES DE METROS
-    # ========================================================
-
-    if not df_metros.empty:
-
-        # Crear copia para no modificar accidentalmente
-        # el dataframe original
-
-        df_metros = df_metros.copy()
-
-
-        df_metros["Metros_Nuevo"] = (
-            df_metros["Metros"]
-            .apply(
-                lambda x:
-                    nuevov * 1000
-                    + random.randint(0, 999)
-            )
-        )
-
-
-    # ========================================================
-    # MOSTRAR NUEVOS VALORES
-    # ========================================================
-
-    st.markdown("---")
-
-    st.subheader(
-        "NUEVOS VALORES EN METROS"
-    )
-
-
-    if not df_metros.empty:
-
-        st.dataframe(
-            df_metros[
-                [
-                    "Direccion_decimal",
-                    "Direccion",
-                    "Endian",
-                    "Metros",
-                    "Metros_Nuevo",
-                    "HEX",
-                    "Bytes_BIN"
-                ]
-            ],
-            use_container_width=True,
-            hide_index=True
-        )
-
-
-    else:
-
-        st.info(
-            "No existen valores de metros para modificar."
-        )
-
-
-    # ========================================================
-    # ESCRIBIR NUEVOS VALORES DE METROS EN EL BIN
-    # ========================================================
-
-    for _, fila in df_metros.iterrows():
-
-        direccion = int(
-            fila["Direccion_decimal"]
-        )
-
-
-        nuevo_metros = int(
-            fila["Metros_Nuevo"]
-        )
-
-
-        endian = fila["Endian"]
-
-
-        # ====================================================
-        # BIG-ENDIAN
-        # ====================================================
-
-        if endian == "BIG":
-
-            datos_modificados[
-                direccion:direccion + 4
-            ] = nuevo_metros.to_bytes(
-                4,
-                byteorder="big",
-                signed=False
-            )
-
-
-            cambios_metros += 1
-
-
-        # ====================================================
-        # LITTLE-ENDIAN
-        # ====================================================
-
-        elif endian == "LITTLE":
-
-            datos_modificados[
-                direccion:direccion + 4
-            ] = nuevo_metros.to_bytes(
-                4,
-                byteorder="little",
-                signed=False
-            )
-
-
-            cambios_metros += 1
-
-
-    # ========================================================
-    # RESUMEN
-    # ========================================================
-
-    st.markdown("---")
-
-    st.subheader("RESUMEN DE MODIFICACIONES")
 
 
     col1, col2, col3 = st.columns(3)
@@ -903,66 +586,350 @@ if generar_bin:
     with col1:
 
         st.metric(
-            "CAMBIOS KM",
-            cambios_km
+            "OBJETIVO",
+            f"{valor_metros_objetivo:,}"
         )
 
 
     with col2:
 
         st.metric(
-            "CAMBIOS METROS",
-            cambios_metros
+            "MARGEN",
+            f"±{margen_metros:,}"
         )
 
 
     with col3:
 
         st.metric(
-            "TOTAL CAMBIOS",
-            cambios_km + cambios_metros
+            "COINCIDENCIAS",
+            f"{len(df_metros)}"
         )
 
 
-    # ========================================================
-    # GENERAR ARCHIVO PARA DESCARGA
-    # ========================================================
+    if not df_metros.empty:
 
-    nombre_original = archivo.name
-
-
-    if nombre_original.lower().endswith(".bin"):
-
-        nombre_salida = (
-            nombre_original[:-4]
-            + "_MODIFICADO.bin"
+        st.dataframe(
+            df_metros,
+            use_container_width=True,
+            hide_index=True
         )
 
     else:
 
-        nombre_salida = (
-            nombre_original
-            + "_MODIFICADO.bin"
+        st.warning(
+            "No se encontraron valores "
+            "en el rango de metros."
         )
 
 
     # ========================================================
-    # BOTÓN DESCARGAR
+    # DATAFRAME COMPLETO
     # ========================================================
 
-    st.success(
-        "BIN modificado generado correctamente."
+    with st.expander(
+        "MOSTRAR ANÁLISIS COMPLETO"
+    ):
+
+        st.dataframe(
+            df,
+            use_container_width=True,
+            hide_index=True
+        )
+
+
+    # ========================================================
+    # GENERAR BIN MODIFICADO
+    # ========================================================
+
+    st.markdown("---")
+
+    st.subheader(
+        "GENERAR BIN MODIFICADO"
     )
 
 
-    st.download_button(
-        label="DESCARGAR BIN MODIFICADO",
-        data=bytes(datos_modificados),
-        file_name=nombre_salida,
-        mime="application/octet-stream",
+    generar_bin = st.button(
+        "GENERAR BIN MODIFICADO",
         use_container_width=True,
-        key="descargar_bin_modificado"
+        key="btn_generar_bin_modificado"
     )
+
+
+    if generar_bin:
+
+        # ====================================================
+        # COPIA DEL BIN
+        # ====================================================
+
+        datos_modificados = bytearray(
+            datos
+        )
+
+
+        cambios_km = 0
+
+        cambios_metros = 0
+
+
+        # ====================================================
+        # CAMBIAR VALORES DE KM
+        # ====================================================
+
+        for _, fila in resultado.iterrows():
+
+            direccion = int(
+                fila["Direccion_decimal"]
+            )
+
+
+            # ------------------------------------------------
+            # BIG-ENDIAN
+            # ------------------------------------------------
+
+            if (
+                fila["Decimal_BIG"]
+                == valor_buscado
+            ):
+
+                datos_modificados[
+                    direccion:direccion + 4
+                ] = int(nuevov).to_bytes(
+                    4,
+                    byteorder="big",
+                    signed=False
+                )
+
+
+                cambios_km += 1
+
+
+                st.write(
+                    f"KM BIG | "
+                    f"0x{direccion:04X} | "
+                    f"{valor_buscado:,} → "
+                    f"{nuevov:,}"
+                )
+
+
+            # ------------------------------------------------
+            # LITTLE-ENDIAN
+            # ------------------------------------------------
+
+            elif (
+                fila["Decimal_LITTLE"]
+                == valor_buscado
+            ):
+
+                datos_modificados[
+                    direccion:direccion + 4
+                ] = int(nuevov).to_bytes(
+                    4,
+                    byteorder="little",
+                    signed=False
+                )
+
+
+                cambios_km += 1
+
+
+                st.write(
+                    f"KM LITTLE | "
+                    f"0x{direccion:04X} | "
+                    f"{valor_buscado:,} → "
+                    f"{nuevov:,}"
+                )
+
+
+        # ====================================================
+        # GENERAR NUEVOS VALORES DE METROS
+        # ====================================================
+
+        if not df_metros.empty:
+
+            df_metros = df_metros.copy()
+
+
+            df_metros["Metros_Nuevo"] = (
+                df_metros["Metros"].apply(
+                    lambda x:
+                    nuevov * 1000
+                    + random.randint(0, 999)
+                )
+            )
+
+
+        # ====================================================
+        # MOSTRAR NUEVOS VALORES
+        # ====================================================
+
+        st.markdown("---")
+
+        st.subheader(
+            "NUEVOS VALORES EN METROS"
+        )
+
+
+        if not df_metros.empty:
+
+            st.dataframe(
+                df_metros[
+                    [
+                        "Direccion_decimal",
+                        "Direccion",
+                        "Endian",
+                        "Metros",
+                        "Metros_Nuevo",
+                        "HEX",
+                        "Bytes_BIN"
+                    ]
+                ],
+                use_container_width=True,
+                hide_index=True
+            )
+
+
+        # ====================================================
+        # ESCRIBIR NUEVOS VALORES DE METROS
+        # ====================================================
+
+        for _, fila in df_metros.iterrows():
+
+            direccion = int(
+                fila["Direccion_decimal"]
+            )
+
+
+            nuevo_metros = int(
+                fila["Metros_Nuevo"]
+            )
+
+
+            endian = fila["Endian"]
+
+
+            # ------------------------------------------------
+            # BIG-ENDIAN
+            # ------------------------------------------------
+
+            if endian == "BIG":
+
+                datos_modificados[
+                    direccion:direccion + 4
+                ] = nuevo_metros.to_bytes(
+                    4,
+                    byteorder="big",
+                    signed=False
+                )
+
+
+                cambios_metros += 1
+
+
+            # ------------------------------------------------
+            # LITTLE-ENDIAN
+            # ------------------------------------------------
+
+            elif endian == "LITTLE":
+
+                datos_modificados[
+                    direccion:direccion + 4
+                ] = nuevo_metros.to_bytes(
+                    4,
+                    byteorder="little",
+                    signed=False
+                )
+
+
+                cambios_metros += 1
+
+
+        # ====================================================
+        # RESUMEN
+        # ====================================================
+
+        st.markdown("---")
+
+        st.subheader(
+            "RESULTADO FINAL"
+        )
+
+
+        col1, col2, col3 = st.columns(3)
+
+
+        with col1:
+
+            st.metric(
+                "VALORES KM MODIFICADOS",
+                cambios_km
+            )
+
+
+        with col2:
+
+            st.metric(
+                "VALORES METROS MODIFICADOS",
+                cambios_metros
+            )
+
+
+        with col3:
+
+            st.metric(
+                "TOTAL POSICIONES",
+                cambios_km + cambios_metros
+            )
+
+
+        # ====================================================
+        # NOMBRE DEL ARCHIVO
+        # ====================================================
+
+        nombre_original = archivo.name
+
+
+        if nombre_original.lower().endswith(
+            ".bin"
+        ):
+
+            nombre_salida = (
+                nombre_original[:-4]
+                + "-MODIFICADO-"
+                + str(nuevov)
+                + "KM.bin"
+            )
+
+        else:
+
+            nombre_salida = (
+                nombre_original
+                + "-MODIFICADO-"
+                + str(nuevov)
+                + "KM.bin"
+            )
+
+
+        # ====================================================
+        # DESCARGAR BIN
+        # ====================================================
+
+        st.success(
+            f"BIN modificado generado: "
+            f"{nombre_salida}"
+        )
+
+
+        st.download_button(
+            label="DESCARGAR BIN MODIFICADO",
+            data=bytes(datos_modificados),
+            file_name=nombre_salida,
+            mime="application/octet-stream",
+            use_container_width=True,
+            key="download_bin_modificado"
+        )
+
+
 
 
 
