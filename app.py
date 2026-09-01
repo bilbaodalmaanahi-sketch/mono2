@@ -1,145 +1,3 @@
-from pathlib import Path
-import pandas as pd
-
-
-# ============================================================
-# ARCHIVO BIN
-# ============================================================
-
-archivo1 = Path(
-    "FIAT 500-ECU MARELLI 8GMF-MOD-123KM.bin"
-)
-
-with open(archivo1, "rb") as f:
-    datos = f.read()
-
-print("Tamaño:", len(datos), "bytes")
-
-
-# ============================================================
-# VALOR ORIGINAL
-# ============================================================
-
-ingrekk = 123
-
-bytes_originales = ingrekk.to_bytes(
-    4,
-    byteorder="big",
-    signed=False
-)
-
-print("Valor original:", ingrekk)
-print("HEX BIG:", bytes_originales.hex(" ").upper())
-
-
-# ============================================================
-# DATAFRAME
-# ============================================================
-
-registros = []
-
-for direccion in range(0, len(datos) - 3, 4):
-
-    bloque = datos[direccion:direccion + 4]
-
-    # ========================================================
-    # BIG-ENDIAN
-    # ========================================================
-
-    decimal_big = int.from_bytes(
-        bloque,
-        byteorder="big",
-        signed=False
-    )
-
-    hex_big = f"{decimal_big:08X}"
-
-
-    # ========================================================
-    # LITTLE-ENDIAN
-    # ========================================================
-
-    decimal_little = int.from_bytes(
-        bloque,
-        byteorder="little",
-        signed=False
-    )
-
-    hex_little = f"{decimal_little:08X}"
-
-
-    # ========================================================
-    # GUARDAR
-    # ========================================================
-
-    registros.append({
-
-        "Direccion":
-            f"0x{direccion:04X}",
-
-        "Bytes_BIN":
-            bloque.hex(" ").upper(),
-
-        "HEX_BIG":
-            hex_big,
-
-        "Decimal_BIG":
-            decimal_big,
-
-        "HEX_LITTLE":
-            hex_little,
-
-        "Decimal_LITTLE":
-            decimal_little
-    })
-
-
-# ============================================================
-# DATAFRAME
-# ============================================================
-
-df = pd.DataFrame(registros)
-
-
-# ============================================================
-# MOSTRAR
-# ============================================================
-
-print()
-print("==============================================================")
-print("BIG-ENDIAN VS LITTLE-ENDIAN")
-print("==============================================================")
-
-print(
-    df.to_string(index=False)
-)
-
-
-# ============================================================
-# BUSCAR 185971 EN AMBAS REPRESENTACIONES
-# ============================================================
-
-resultado = df[
-    (df["Decimal_BIG"] == ingrekk) |
-    (df["Decimal_LITTLE"] == ingrekk)
-]
-
-print()
-print("==============================================================")
-print("OCURRENCIAS DE 185971")
-print("==============================================================")
-
-if not resultado.empty:
-
-    print(
-        resultado.to_string(index=False)
-    )
-
-else:
-
-    print("No se encontró 185971.")
-    
-    
     
 from pathlib import Path
 import pandas as pd
@@ -150,14 +8,17 @@ import random
 # ARCHIVO BIN
 # ============================================================
 
-archivo1 = Path(
-    "FIAT 500-ECU MARELLI 8GMF (185971 KM).bin"
+archivo1 = st.file_uploader(
+    "Cargar archivo BIN",
+    type=["bin"]
 )
 
-with open(archivo1, "rb") as f:
-    datos = f.read()
+if archivo1 is None:
+    st.info("Cargá un archivo BIN para comenzar.")
+    st.stop()
 
-print("Tamaño:", len(datos), "bytes")
+datos = archivo1.read()
+
 
 
 # ============================================================
@@ -664,4 +525,5 @@ print(
     f"{len(resultado) + len(df_metros)}"
 )
 
-print("=" * 100)  
+print("=" * 100)    
+    
