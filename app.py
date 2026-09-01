@@ -134,7 +134,7 @@ print("Tamaño:", len(datos), "bytes")
 # ============================================================
 
 valor_buscado = st.number_input(
-    "Valor a buscar",
+    "valor_buscado",
     min_value=0,
     value=None,
     placeholder="Ingrese el kilometraje",
