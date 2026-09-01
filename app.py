@@ -143,7 +143,7 @@ st.success(
 # VALORES
 # ============================================================
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
 
@@ -166,7 +166,10 @@ with col2:
         step=1
     )
 with col3: 
-    margen_metros = st.number_input( "Margen de búsqueda en metros", min_value=0, value=1_000_000, step=1 )
+    margen_metros = st.number_input( "Margen de búsqueda en metros",
+    min_value=0,
+    value=1_000_000,
+    step=1 )
 
 # ============================================================
 # MARGEN FIJO
