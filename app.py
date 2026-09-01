@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import pandas as pd
 import random
@@ -348,6 +347,6 @@ else:
     st.info(
         "Seleccione un archivo BIN para comenzar."
     )
-```
+
 
 
