@@ -146,33 +146,28 @@ st.success(
 col1, col2, col3 = st.columns(3)
 
 with col1:
-
     valor_buscado = st.number_input(
         "Valor KM a buscar",
         min_value=0,
-        value=None,
-        placeholder="Ingrese KM",
+        value=185971,
         step=1
     )
 
-
 with col2:
-
     nuevov = st.number_input(
         "Nuevo valor KM",
         min_value=0,
-        value=None,
-        placeholder="Ingrese nuevo KM",
+        value=123,
         step=1
     )
-with col3: 
-    margen_metros = st.number_input( "Margen de búsqueda en metros",
-    min_value=0,
-    value=1_000_000,
-    step=1 )
 
-# ============================================================
-# MARGEN FIJO
+with col3:
+    margen_metros = st.number_input(
+        "Margen de búsqueda en metros",
+        min_value=0,
+        value=1_000_000,
+        step=1
+    )
 # ============================================================
 
 margen_metros = 1_000_000
