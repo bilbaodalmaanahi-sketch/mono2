@@ -1,6 +1,8 @@
+```python
 import streamlit as st
 import pandas as pd
 import random
+
 
 # ============================================================
 # CONFIGURACIÓN
@@ -108,21 +110,12 @@ st.write(
     "generar un BIN modificado."
 )
 
-# ============================================================
-# CONFIGURACIÓN
-# ============================================================
-
-st.set_page_config(
-    page_title="Monky BIN Analyzer",
-    page_icon="",
-    layout="wide"
-)
-
 
 # ============================================================
 # CARGAR ARCHIVO BIN
 # ============================================================
 
+st.subheader("ARCHIVO BIN")
 
 archivo = st.file_uploader(
     "Seleccionar archivo BIN",
@@ -134,25 +127,35 @@ archivo = st.file_uploader(
 # DATOS A BUSCAR / MODIFICAR
 # ============================================================
 
+st.subheader("PARÁMETROS")
+
 col1, col2, col3 = st.columns(3)
 
+
 with col1:
+
     valor_buscado = st.number_input(
         "Kilometraje a buscar (KM)",
         min_value=0,
-        value=185971,
+        value=None,
+        placeholder="Ingrese el KM",
         step=1
     )
 
+
 with col2:
+
     nuevov = st.number_input(
         "Nuevo valor (KM)",
         min_value=0,
-        value=123,
+        value=None,
+        placeholder="Ingrese el nuevo KM",
         step=1
     )
 
+
 with col3:
+
     margen_metros = st.number_input(
         "Margen de búsqueda (metros)",
         min_value=0,
@@ -167,7 +170,10 @@ with col3:
 
 if archivo is not None:
 
-    # Leer BIN
+    # --------------------------------------------------------
+    # LEER ARCHIVO
+    # --------------------------------------------------------
+
     datos = archivo.read()
 
     st.success(
@@ -178,61 +184,170 @@ if archivo is not None:
         f"**Tamaño:** {len(datos):,} bytes"
     )
 
-    # ========================================================
-    # EQUIVALENTE ORIGINAL EN METROS
-    # ========================================================
-
-    valor_metros_objetivo = valor_buscado * 1000
 
     # ========================================================
-    # MARGEN DE BÚSQUEDA
+    # VALIDAR DATOS
     # ========================================================
 
-    limite_metros_inicio = (
-        valor_metros_objetivo - margen_metros
-    )
+    if valor_buscado is None or nuevov is None:
 
-    limite_metros_fin = (
-        valor_metros_objetivo + margen_metros
-    )
-
-    # ========================================================
-    # MOSTRAR INFORMACIÓN
-    # ========================================================
-
-    st.subheader("Parámetros de búsqueda")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(
-            "KM buscado",
-            f"{valor_buscado:,}"
+        st.warning(
+            "Ingrese el kilometraje a buscar y el nuevo valor."
         )
 
-    with col2:
-        st.metric(
-            "Equivalente en metros",
-            f"{valor_metros_objetivo:,}"
+
+    else:
+
+        # ====================================================
+        # EQUIVALENTE ORIGINAL EN METROS
+        # ====================================================
+
+        valor_metros_objetivo = int(
+            valor_buscado * 1000
         )
 
-    with col3:
-        st.metric(
-            "Nuevo valor",
-            f"{nuevov:,} KM"
+
+        # ====================================================
+        # MARGEN DE BÚSQUEDA
+        # ====================================================
+
+        limite_metros_inicio = (
+            valor_metros_objetivo - margen_metros
         )
 
-    st.write(
-        f"**Rango de búsqueda:** "
-        f"{limite_metros_inicio:,} → "
-        f"{limite_metros_fin:,} metros"
-    )
+        limite_metros_fin = (
+            valor_metros_objetivo + margen_metros
+        )
+
+
+        # ====================================================
+        # INFORMACIÓN
+        # ====================================================
+
+        st.subheader("PARÁMETROS DE BÚSQUEDA")
+
+
+        col1, col2, col3 = st.columns(3)
+
+
+        with col1:
+
+            st.metric(
+                "KM BUSCADO",
+                f"{int(valor_buscado):,}"
+            )
+
+
+        with col2:
+
+            st.metric(
+                "EQUIVALENTE EN METROS",
+                f"{valor_metros_objetivo:,}"
+            )
+
+
+        with col3:
+
+            st.metric(
+                "NUEVO VALOR",
+                f"{int(nuevov):,} KM"
+            )
+
+
+        # ====================================================
+        # RANGO
+        # ====================================================
+
+        st.write(
+            f"**Rango de búsqueda:** "
+            f"{int(limite_metros_inicio):,} → "
+            f"{int(limite_metros_fin):,} metros"
+        )
+
+
+        # ====================================================
+        # DATOS INTERNOS
+        # ====================================================
+
+        st.write("### DATOS CALCULADOS")
+
+
+        datos_calculados = pd.DataFrame({
+            "Parámetro": [
+                "KM buscado",
+                "Nuevo KM",
+                "KM buscado en metros",
+                "Margen",
+                "Límite inferior",
+                "Límite superior",
+                "Tamaño BIN"
+            ],
+
+            "Valor": [
+                int(valor_buscado),
+                int(nuevov),
+                valor_metros_objetivo,
+                int(margen_metros),
+                int(limite_metros_inicio),
+                int(limite_metros_fin),
+                f"{len(datos):,} bytes"
+            ]
+        })
+
+
+        st.dataframe(
+            datos_calculados,
+            use_container_width=True,
+            hide_index=True
+        )
+
+
+        # ====================================================
+        # BOTÓN DE BÚSQUEDA
+        # ====================================================
+
+        st.markdown("---")
+
+
+        buscar = st.button(
+            "BUSCAR VALORES EN BIN",
+            use_container_width=True
+        )
+
+
+        if buscar:
+
+            st.info(
+                "Archivo listo para realizar la búsqueda "
+                "BIG-ENDIAN / LITTLE-ENDIAN."
+            )
+
+            st.write(
+                f"Valor buscado: **{int(valor_buscado):,} KM**"
+            )
+
+            st.write(
+                f"Nuevo valor: **{int(nuevov):,} KM**"
+            )
+
+            st.write(
+                f"Objetivo en metros: "
+                f"**{valor_metros_objetivo:,}**"
+            )
+
+            st.write(
+                f"Rango: "
+                f"**{int(limite_metros_inicio):,}** "
+                f"→ "
+                f"**{int(limite_metros_fin):,}** metros"
+            )
+
 
 else:
 
     st.info(
         "Seleccione un archivo BIN para comenzar."
     )
-
+```
 
 
