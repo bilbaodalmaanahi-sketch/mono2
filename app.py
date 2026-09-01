@@ -232,15 +232,19 @@ df = pd.DataFrame(registros)
 # MOSTRAR DATAFRAME
 # ============================================================
 
-print()
-print("=" * 100)
-print("BIG-ENDIAN VS LITTLE-ENDIAN")
-print("=" * 100)
+# ============================================================
+# MOSTRAR DATAFRAME
+# ============================================================
 
-print(
-    df.to_string(index=False)
+st.divider()
+
+st.subheader("BIG-ENDIAN VS LITTLE-ENDIAN")
+
+st.dataframe(
+    df,
+    use_container_width=True,
+    hide_index=True
 )
-
 
 # ============================================================
 # BUSCAR VALOR EN BIG O LITTLE
