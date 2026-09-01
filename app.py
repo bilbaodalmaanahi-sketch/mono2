@@ -725,46 +725,7 @@ else:
         )
 
 
-        # ====================================================
-        # NOMBRE DEL ARCHIVO
-        # ====================================================
-
-        nombre_original = archivo1.name
-
-
-        if nombre_original.lower().endswith(".bin"):
-
-            nombre_salida = (
-                nombre_original[:-4]
-                + "_MOD.bin"
-            )
-
-        else:
-
-            nombre_salida = (
-                nombre_original
-                + "_MOD.bin"
-            )
-
-
-        # ====================================================
-        # DESCARGAR
-        # ====================================================
-
-        st.download_button(
-
-            label="DESCARGAR BIN MODIFICADO",
-
-            data=bytes(datos_modificados),
-
-            file_name=nombre_salida,
-
-            mime="application/octet-stream",
-
-            use_container_width=True
-
-        )
-
+        
 # ============================================================
 # GENERAR NUEVOS VALORES DE METROS
 # ============================================================
