@@ -659,5 +659,310 @@ if analizar:
             hide_index=True
         )
 
+# ============================================================
+# CAMBIAR LOS VALORES DE KM Y GENERAR BIN MODIFICADO
+# ============================================================
+
+st.markdown("---")
+
+st.subheader("GENERAR BIN MODIFICADO")
+
+
+# ============================================================
+# BOTÓN PARA MODIFICAR
+# ============================================================
+
+generar_bin = st.button(
+    "GENERAR BIN MODIFICADO",
+    use_container_width=True,
+    key="generar_bin_modificado"
+)
+
+
+if generar_bin:
+
+    # ========================================================
+    # COPIA DEL BIN ORIGINAL
+    # ========================================================
+
+    datos_modificados = bytearray(datos)
+
+
+    # ========================================================
+    # CONTADOR DE CAMBIOS
+    # ========================================================
+
+    cambios_km = 0
+    cambios_metros = 0
+
+
+    # ========================================================
+    # CAMBIAR LOS VALORES EXACTOS DE KM
+    # ========================================================
+
+    for _, fila in resultado.iterrows():
+
+        direccion = int(
+            fila["Direccion_decimal"]
+        )
+
+
+        # ----------------------------------------------------
+        # DETERMINAR SI EL VALOR ERA BIG O LITTLE
+        # ----------------------------------------------------
+
+        fila_original = df[
+            df["Direccion_decimal"] == direccion
+        ].iloc[0]
+
+
+        # ====================================================
+        # BIG-ENDIAN
+        # ====================================================
+
+        if (
+            fila_original["Decimal_BIG"]
+            == valor_buscado
+        ):
+
+            datos_modificados[
+                direccion:direccion + 4
+            ] = int(nuevov).to_bytes(
+                4,
+                byteorder="big",
+                signed=False
+            )
+
+
+            cambios_km += 1
+
+
+            st.write(
+                f"KM BIG | "
+                f"0x{direccion:04X} | "
+                f"{valor_buscado:,} → "
+                f"{nuevov:,}"
+            )
+
+
+        # ====================================================
+        # LITTLE-ENDIAN
+        # ====================================================
+
+        elif (
+            fila_original["Decimal_LITTLE"]
+            == valor_buscado
+        ):
+
+            datos_modificados[
+                direccion:direccion + 4
+            ] = int(nuevov).to_bytes(
+                4,
+                byteorder="little",
+                signed=False
+            )
+
+
+            cambios_km += 1
+
+
+            st.write(
+                f"KM LITTLE | "
+                f"0x{direccion:04X} | "
+                f"{valor_buscado:,} → "
+                f"{nuevov:,}"
+            )
+
+
+    # ========================================================
+    # GENERAR NUEVOS VALORES DE METROS
+    # ========================================================
+
+    if not df_metros.empty:
+
+        # Crear copia para no modificar accidentalmente
+        # el dataframe original
+
+        df_metros = df_metros.copy()
+
+
+        df_metros["Metros_Nuevo"] = (
+            df_metros["Metros"]
+            .apply(
+                lambda x:
+                    nuevov * 1000
+                    + random.randint(0, 999)
+            )
+        )
+
+
+    # ========================================================
+    # MOSTRAR NUEVOS VALORES
+    # ========================================================
+
+    st.markdown("---")
+
+    st.subheader(
+        "NUEVOS VALORES EN METROS"
+    )
+
+
+    if not df_metros.empty:
+
+        st.dataframe(
+            df_metros[
+                [
+                    "Direccion_decimal",
+                    "Direccion",
+                    "Endian",
+                    "Metros",
+                    "Metros_Nuevo",
+                    "HEX",
+                    "Bytes_BIN"
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True
+        )
+
+
+    else:
+
+        st.info(
+            "No existen valores de metros para modificar."
+        )
+
+
+    # ========================================================
+    # ESCRIBIR NUEVOS VALORES DE METROS EN EL BIN
+    # ========================================================
+
+    for _, fila in df_metros.iterrows():
+
+        direccion = int(
+            fila["Direccion_decimal"]
+        )
+
+
+        nuevo_metros = int(
+            fila["Metros_Nuevo"]
+        )
+
+
+        endian = fila["Endian"]
+
+
+        # ====================================================
+        # BIG-ENDIAN
+        # ====================================================
+
+        if endian == "BIG":
+
+            datos_modificados[
+                direccion:direccion + 4
+            ] = nuevo_metros.to_bytes(
+                4,
+                byteorder="big",
+                signed=False
+            )
+
+
+            cambios_metros += 1
+
+
+        # ====================================================
+        # LITTLE-ENDIAN
+        # ====================================================
+
+        elif endian == "LITTLE":
+
+            datos_modificados[
+                direccion:direccion + 4
+            ] = nuevo_metros.to_bytes(
+                4,
+                byteorder="little",
+                signed=False
+            )
+
+
+            cambios_metros += 1
+
+
+    # ========================================================
+    # RESUMEN
+    # ========================================================
+
+    st.markdown("---")
+
+    st.subheader("RESUMEN DE MODIFICACIONES")
+
+
+    col1, col2, col3 = st.columns(3)
+
+
+    with col1:
+
+        st.metric(
+            "CAMBIOS KM",
+            cambios_km
+        )
+
+
+    with col2:
+
+        st.metric(
+            "CAMBIOS METROS",
+            cambios_metros
+        )
+
+
+    with col3:
+
+        st.metric(
+            "TOTAL CAMBIOS",
+            cambios_km + cambios_metros
+        )
+
+
+    # ========================================================
+    # GENERAR ARCHIVO PARA DESCARGA
+    # ========================================================
+
+    nombre_original = archivo.name
+
+
+    if nombre_original.lower().endswith(".bin"):
+
+        nombre_salida = (
+            nombre_original[:-4]
+            + "_MODIFICADO.bin"
+        )
+
+    else:
+
+        nombre_salida = (
+            nombre_original
+            + "_MODIFICADO.bin"
+        )
+
+
+    # ========================================================
+    # BOTÓN DESCARGAR
+    # ========================================================
+
+    st.success(
+        "BIN modificado generado correctamente."
+    )
+
+
+    st.download_button(
+        label="DESCARGAR BIN MODIFICADO",
+        data=bytes(datos_modificados),
+        file_name=nombre_salida,
+        mime="application/octet-stream",
+        use_container_width=True,
+        key="descargar_bin_modificado"
+    )
+
 
 
